@@ -23,7 +23,6 @@ class BorderType(dict):
         self.bottomleft = bottomleft
         self.bottomright = bottomright
 
-
     @staticmethod
     def make_border(string: str, spacer: str = " ") -> Self:
         return BorderType(
@@ -36,7 +35,6 @@ class BorderType(dict):
             f"{string}",
             f"{string}",
         )
-
 
 
 NO_BORDER = BorderType(
@@ -180,8 +178,8 @@ class AreaText:
         b = self.border
 
         def cutoff_repeat(string, width) -> str:
-            return string * (width // len(string)) + string[:width % len(string)]
-        
+            return string * (width // len(string)) + string[: width % len(string)]
+
         width = self.padded.width
 
         first, last = (
@@ -197,7 +195,7 @@ class AreaText:
 
     @property
     def width(self) -> int:
-        return max(len(l) for l in self.lines)
+        return max(len(line) for line in self.lines)
 
     @property
     def height(self) -> int:
@@ -223,9 +221,9 @@ class AreaText:
         if padding_bottom:
             self.lines = self.lines + [""] * padding_bottom
         if padding_left:
-            self.lines = [(" " * padding_left) + l for l in self.lines]
+            self.lines = [(" " * padding_left) + line for line in self.lines]
         if padding_right:
-            self.lines = [l + (" " * padding_right) for l in self.lines]
+            self.lines = [line + (" " * padding_right) for line in self.lines]
 
         return self.align(Justification.START)
 
@@ -263,4 +261,3 @@ text = """Lorem ipsum dolor sit amet, consectetur adipiscing elit, \
 
 s = AreaText(text, columns=40, padding_inline=1, border=SINGLE)
 print(s.align(Justification.CENTERED).pad(3, 6, 3, 6))
-
