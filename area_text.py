@@ -12,7 +12,15 @@ class BorderType(dict):
     NO_BORDER = "NO_BORDER"
 
     def __init__(
-        self, top, right, bottom, left, topleft, topright, bottomleft, bottomright
+        self,
+        top: str,
+        right: str,
+        bottom: str,
+        left: str,
+        topleft: str,
+        topright: str,
+        bottomleft: str,
+        bottomright: str,
     ) -> None:
         self.top = top
         self.right = right
@@ -37,16 +45,7 @@ class BorderType(dict):
         )
 
 
-NO_BORDER = BorderType(
-    top=" ",
-    right=" ",
-    bottom=" ",
-    left=" ",
-    topleft=" ",
-    topright=" ",
-    bottomleft=" ",
-    bottomright=" ",
-)
+NO_BORDER = BorderType(*(" ",) * 8)
 
 ASCII = BorderType(
     top="-",
@@ -137,7 +136,7 @@ class AreaText:
         if self.indent > 0:
             splitwords.insert(0, " " * indent)
 
-        splitwords = list(reversed(splitwords))
+        splitwords = splitwords[::-1]
         current_line = 0
         current_length = 0
         lines.append("")
@@ -151,7 +150,7 @@ class AreaText:
 
             joiner = " " if lines[current_line] else ""
             if "\n" in word:
-                string = word.split("\n")
+                string = word.splitlines()
                 lines[current_line] += joiner
                 for substring in string:
                     try:
@@ -161,7 +160,7 @@ class AreaText:
                         lines[current_line] += substring
                     current_line += 1
             elif word != "":
-                lines[current_line] = joiner.join([lines[current_line], word])
+                lines[current_line] = joiner.join((lines[current_line], word))
             current_length += len(word)
 
         self.lines = lines
@@ -176,11 +175,11 @@ class AreaText:
 
     def __str__(self):
         b = self.border
+        width = self.padded.width
 
         def cutoff_repeat(string, width) -> str:
             return string * (width // len(string)) + string[: width % len(string)]
 
-        width = self.padded.width
 
         first, last = (
             b.topleft + cutoff_repeat(b.top, width) + b.topright + "\n",
@@ -236,12 +235,16 @@ class AreaText:
         }
 
         if (method := alignments.get(alignment)) is None:
-            raise ValueError
+            raise ValueError("Text justification can be START, END, or CENTERED.")
         return method(line, length)
 
     def align(self, inline_alignment: Justification):
         out = [
-            AreaText.align_line(line, length=self.width, alignment=inline_alignment)
+            AreaText.align_line(
+                line,
+                length=self.width,
+                alignment=inline_alignment,
+            )
             for line in self.lines
         ]
         return AreaText(sequence=out, border=self.border)
@@ -251,13 +254,20 @@ class AreaText:
 #                  EXAMPLE                  #
 #############################################
 
-text = """Lorem ipsum dolor sit amet, consectetur adipiscing elit, \
-    sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. \
-    Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris \
-    nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in \
-    reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla \
-    pariatur. Excepteur sint occaecat cupidatat non proident, sunt in \
-    culpa qui officia deserunt mollit anim id est laborum."""
 
-s = AreaText(text, columns=40, padding_inline=1, border=SINGLE)
-print(s.align(Justification.CENTERED).pad(3, 6, 3, 6))
+def main() -> None:
+    text = (
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor"
+        " incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis"
+        " nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+        " Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore"
+        "eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt"
+        " in culpa qui officia deserunt mollit anim id est laborum."
+    )
+
+    s = AreaText(text, columns=40, padding_inline=1, border=SINGLE)
+    print(s.align(Justification.CENTERED).pad(3, 6, 3, 6))
+
+
+if __name__ == "__main__":
+    main()
